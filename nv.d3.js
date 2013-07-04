@@ -7116,7 +7116,7 @@ nv.models.multiBarHorizontal = function() {
 
       gEnter.append('g').attr('class', 'nv-groups');
 
-      wrap.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+      wrap.attr('transform', 'translate(' + (margin.left + 1) + ',' + margin.top + ')');
 
       //------------------------------------------------------------
 
