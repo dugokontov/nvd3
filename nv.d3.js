@@ -8662,7 +8662,6 @@ nv.models.pie = function() {
   var margin = {top: 0, right: 0, bottom: 0, left: 0}
     , width = 500
     , height = 500
-    , getValues = function(d) { return d.values }
     , getX = function(d) { return d.x }
     , getY = function(d) { return d.y }
     , getDescription = function(d) { return d.description }
@@ -8697,7 +8696,7 @@ nv.models.pie = function() {
       // Setup containers and skeleton of chart
 
       //var wrap = container.selectAll('.nv-wrap.nv-pie').data([data]);
-      var wrap = container.selectAll('.nv-wrap.nv-pie').data([getValues(data[0])]);
+      var wrap = container.selectAll('.nv-wrap.nv-pie').data(data);
       var wrapEnter = wrap.enter().append('g').attr('class','nvd3 nv-wrap nv-pie nv-chart-' + id);
       var gEnter = wrapEnter.append('g');
       var g = wrap.select('g');
@@ -8938,8 +8937,7 @@ nv.models.pie = function() {
   };
 
   chart.values = function(_) {
-    if (!arguments.length) return getValues;
-    getValues = _;
+    nv.log("pie.values() is no longer supported.");
     return chart;
   };
 
@@ -9093,7 +9091,7 @@ nv.models.pieChart = function() {
           availableHeight = (height || parseInt(container.style('height')) || 400)
                              - margin.top - margin.bottom;
 
-      chart.update = function() { chart(selection); };
+      chart.update = function() { container.transition().call(chart); };
       chart.container = this;
 
       //set state.disabled
@@ -9156,7 +9154,7 @@ nv.models.pieChart = function() {
           .key(pie.x());
 
         wrap.select('.nv-legendWrap')
-            .datum(pie.values()(data[0]))
+            .datum(data)
             .call(legend);
 
         if ( margin.top != legend.height()) {
@@ -9184,7 +9182,7 @@ nv.models.pieChart = function() {
 
 
       var pieWrap = g.select('.nv-pieWrap')
-          .datum(data);
+          .datum([data]);
 
       d3.transition(pieWrap).call(pie);
 
@@ -9195,11 +9193,11 @@ nv.models.pieChart = function() {
       // Event Handling/Dispatching (in chart's scope)
       //------------------------------------------------------------
 
-      legend.dispatch.on('legendClick', function(d,i, that) {
+      legend.dispatch.on('legendClick', function(d) {
         d.disabled = !d.disabled;
 
-        if (!pie.values()(data[0]).filter(function(d) { return !d.disabled }).length) {
-          pie.values()(data[0]).map(function(d) {
+        if (!data.filter(function(d) { return !d.disabled }).length) {
+          data.map(function(d) {
             d.disabled = false;
             wrap.selectAll('.nv-series').classed('disabled', false);
             return d;
@@ -9209,7 +9207,19 @@ nv.models.pieChart = function() {
         state.disabled = data.map(function(d) { return !!d.disabled });
         dispatch.stateChange(state);
 
-        selection.transition().call(chart)
+        chart.update();
+      });
+
+      legend.dispatch.on('legendDblclick', function(d) {
+          //Double clicking should always enable current series, and disabled all others.
+          data.forEach(function(d) {
+             d.disabled = true;
+          });
+          d.disabled = false;  
+
+          state.disabled = data.map(function(d) { return !!d.disabled });
+          dispatch.stateChange(state);
+          chart.update();
       });
 
       pie.dispatch.on('elementMouseout.tooltip', function(e) {
@@ -9220,14 +9230,14 @@ nv.models.pieChart = function() {
       dispatch.on('changeState', function(e) {
 
         if (typeof e.disabled !== 'undefined') {
-          data[0].forEach(function(series,i) {
+          data.forEach(function(series,i) {
             series.disabled = e.disabled[i];
           });
 
           state.disabled = e.disabled;
         }
 
-        selection.call(chart);
+        chart.update();
       });
 
       //============================================================
@@ -9339,7 +9349,6 @@ nv.models.pieChart = function() {
 
   return chart;
 }
-
 nv.models.scatter = function() {
 
   //============================================================
