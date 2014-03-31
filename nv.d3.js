@@ -8058,7 +8058,7 @@ nv.models.multiBarChart = function() {
         x = xAxis.tickFormat()(multibar.x()(e.point, e.pointIndex)),
         y = yAxis.tickFormat()(multibar.y()(e.point, e.pointIndex)),
         content = tooltip(e.series.key, x, y, e, chart),
-        gravity = tooltipOptions.gravity || (e.value < 0 ? 'n' : 's')
+        gravity = tooltipOptions.gravity || (e.value < 0 ? 'n' : 's'),
         dist = tooltipOptions.dist || null;
 
     nv.tooltip.show([left, top], content, gravity, dist, offsetElement);
